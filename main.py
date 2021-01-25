@@ -6,7 +6,6 @@ import time
 
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-import psutil
 import pymysql
 
 schedule = sched.scheduler(time.time, time.sleep)
@@ -16,11 +15,10 @@ cursor = db.cursor()
 
 def common_sql():
     # Use a breakpoint in the code line below to debug your script.
-    mem = psutil.virtual_memory()
     query_sql = "select * from test;"
-    insert_sql = "insert into test (`id`,`name`,`age`,`addr`) values (?,?,?,?)"
-    del_sql = "delete from test where `id`=?"
-    update_sql = "update test set 'addr' = ? where 'id'=?"
+    insert_sql = "insert into test (`name`,`age`,`addr`) values (%s,%s,%s)"
+    del_sql = "delete from test where `id`=%s"
+    update_sql = "update test set `addr` = %s where 'id'=%s"
     try:
         cursor.execute(query_sql)
         results = cursor.fetchall()
@@ -31,28 +29,25 @@ def common_sql():
             addr = row[3]
             print("%s,%s,%s,%s" % \
                   (ids, name, age, addr))
-    except:
+    except ValueError:
         print("Error:unable to fetch data")
 
     try:
-        cursor2 = db.cursor()
-        cursor2.execute(insert_sql, 3, "小吴", 26, "江西")
+        execute = cursor.execute(insert_sql, args=("小吴2", "26", "江西"))
         db.commit()
-    except:
+    except ValueError:
         db.rollback()
         print("写入数据出错！")
 
     try:
-        cursor3 = db.cursor()
-        cursor3.execute(update_sql, '武汉', 1)
+        cursor.execute(update_sql, args=('武汉', 1))
         db.commit()
-    except:
+    except ValueError:
         print('更新数据出错！')
 
     try:
-        cursor4 = db.cursor()
-        cursor4.execute(del_sql, 2)
-    except:
+        cursor.execute(del_sql, args=2)
+    except ValueError:
         print('数据删除失败！')
 
     db.close()
